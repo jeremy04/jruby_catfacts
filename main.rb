@@ -2,29 +2,28 @@ require 'java'
 
 Dir["#{File.expand_path File.dirname(__FILE__)}/jars/*.jar"].each { |jar| require jar }
 
+# Run like:
+
+# jruby --2.0 -S main.rb -Dlog4j.configuration=log4j2.xml
+
+# or add it to the class path
+
+$CLASSPATH << "#{File.dirname(__FILE__)}/log4j2.xml"
 
 module Logging
-  def self.included(base)
-    base.extend(ClassMethods)
-  end
 
   def logger
-    org.apache.log4j.Logger.getLogger self.class.to_s
+    org.apache.logging.log4j.LogManager.getLogger self.class.to_s
   end
 
-  module ClassMethods
-    def enable_logging
-      org.apache.log4j.PropertyConfigurator.configure "log.properties"
-    end
-
-  end
 end
 
 class Foo
   include Logging
-  enable_logging
 
   def initialize
-    logger.info "WOOO"
+    logger.warn "WOOO"
   end
 end
+
+Foo.new
