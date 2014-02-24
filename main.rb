@@ -1,6 +1,10 @@
 require 'java'
+require 'pp'
+require 'jruby/core_ext'
 
 Dir["#{File.expand_path File.dirname(__FILE__)}/jars/*.jar"].each { |jar| require jar }
+
+java_import "HelloJob"
 
 # Run like:
 
@@ -20,10 +24,43 @@ end
 
 class Foo
   include Logging
+  
+  def initialize(name)
+    @name = name
+  end
 
+  def set_frequency(frequency)
+    @frequency = frequency
+  end
+
+  def report
+    "#{@name} is #{@frequency}"
+  end
+
+end
+
+
+Foo.new
+
+class HelloJob < org.quartz.Job
   def initialize
-    logger.warn "WOOO"
+    super
+  end
+
+  def execute context
+    puts "Hello World"
   end
 end
 
-Foo.new
+factory = org.quartz.impl.StdSchedulerFactory.new
+scheduler = factory.getScheduler
+
+cron_schedule = org.quartz.CronScheduleBuilder.cronSchedule("0/20 * * * * ?")
+
+job_detail = org.quartz.JobBuilder.newJob(HelloJob.become_java!).withIdentity("job1", "group1").build
+
+trigger = org.quartz.TriggerBuilder.newTrigger.withIdentity("trigger", "group1").withSchedule(cron_schedule).build
+
+scheduler.scheduleJob(job_detail, trigger);
+
+scheduler.start
