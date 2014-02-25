@@ -1,15 +1,18 @@
-require 'java'
-Dir["#{File.expand_path File.dirname(__FILE__)}/jars/*.jar"].each { |jar| require jar; $CLASSPATH << "./jars/#{jar}" }
+# Edit classpath for JRuby class loader
+# export CLASSPATH=$CLASSPATH:./jars/*
 
+# Compile HelloJob.rb into Java code:
+# jrubyc --javac -c ./jars/quartz-2.2.1.jar:$JRUBY_JAR_DIR:. hello_job.rb
+
+require 'java'
+java_import "org.quartz.Job"
+java_import 'org.quartz.JobExecutionException'
 
 class HelloJob
-  java_implements org.quartz.Job
-  #include org.quartz.Job
+  java_implements Java::OrgQuartz::Job
 
-  java_signature "void execute(org.quartz.JobExecutionContext)"
+  java_signature "public void execute(org.quartz.JobExecutionContext jobExecutionContext) throws JobExecutionException"
   def execute context
     puts "WOO"
   end
-
-  #add_method_signature :execute, [org.quartz.JobExecutionContext]
 end
