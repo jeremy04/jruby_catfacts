@@ -15,17 +15,22 @@ public class HelloJob extends RubyObject implements Job {
     private static final RubyClass __metaclass__;
 
     static {
-        String source = new StringBuilder("require 'java'\n" +
+        String source = new StringBuilder("# Edit classpath for JRuby class loader\n" +
+            "# export CLASSPATH=$CLASSPATH:./jars/*\n" +
+            "\n" +
+            "# Compile HelloJob.rb into Java code:\n" +
+            "# jrubyc --javac -c ./jars/quartz-2.2.1.jar:$JRUBY_JAR_DIR:. hello_job.rb\n" +
+            "\n" +
+            "require 'java'\n" +
             "java_import \"org.quartz.Job\"\n" +
             "java_import 'org.quartz.JobExecutionException'\n" +
-            "\n" +
             "\n" +
             "class HelloJob\n" +
             "  java_implements Java::OrgQuartz::Job\n" +
             "\n" +
             "  java_signature \"public void execute(org.quartz.JobExecutionContext jobExecutionContext) throws JobExecutionException\"\n" +
             "  def execute context\n" +
-            "    puts \"WOO\"\n" +
+            "    puts \"Sending cat fact #{context.getFireTime}\"\n" +
             "  end\n" +
             "end").toString();
         __ruby__.executeScript(source, "hello_job.rb");

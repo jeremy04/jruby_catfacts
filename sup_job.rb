@@ -8,11 +8,10 @@ require 'java'
 java_import "org.quartz.Job"
 java_import 'org.quartz.JobExecutionException'
 
-class HelloJob
-  java_implements Java::OrgQuartz::Job
+class SupJob
+  include Java::OrgQuartz::Job
 
-  java_signature "public void execute(org.quartz.JobExecutionContext jobExecutionContext) throws JobExecutionException"
   def execute context
-    puts "Sending cat fact #{context.getFireTime}"
+    puts "Sup"
   end
 end
