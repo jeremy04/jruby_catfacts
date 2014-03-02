@@ -13,6 +13,6 @@ class HelloJob
 
   java_signature "public void execute(org.quartz.JobExecutionContext jobExecutionContext) throws JobExecutionException"
   def execute context
-    puts "WOO"
+    puts "Sending cat fact #{context.getFireTime}"
   end
 end

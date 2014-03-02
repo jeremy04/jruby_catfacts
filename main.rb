@@ -3,8 +3,6 @@ require 'pp'
 require "whenever"
 java_import "HelloJob"
 
-require "sup_job"
-
 Dir["#{File.expand_path File.dirname(__FILE__)}/jars/*.jar"].each { |jar| require jar }
 
 
@@ -57,17 +55,16 @@ class CronSchedule
   end
 end
 
-
-
-cron = CronSchedule.new.every("2.minutes")
-
 factory = org.quartz.impl.StdSchedulerFactory.new
 scheduler = factory.getScheduler
-#job = HelloJob
-job = SupJob.new
+job = HelloJob
 
-cron_schedule = org.quartz.CronScheduleBuilder.cronSchedule(org.quartz.CronExpression.new(cron))
-job_detail = org.quartz.JobBuilder.newJob(job.java_class).withIdentity("job1", "group1").build
-trigger = org.quartz.TriggerBuilder.newTrigger.withIdentity("trigger", "group1").withSchedule(cron_schedule).build
-scheduler.scheduleJob(job_detail, trigger);
+[ { name: 'A', cron: CronSchedule.new.every("2.minutes") } , 
+  { name: 'B', cron: CronSchedule.new.every("1.minutes") }].each do |user|
+  cron_schedule = org.quartz.CronScheduleBuilder.cronSchedule(org.quartz.CronExpression.new(user[:cron]))
+  job_detail = org.quartz.JobBuilder.newJob(job.java_class).withIdentity(user[:name], "group1").build
+  trigger = org.quartz.TriggerBuilder.newTrigger.withIdentity("trigger_#{user[:name]}", "group1").withSchedule(cron_schedule).build
+  scheduler.scheduleJob(job_detail, trigger)
+end
+
 scheduler.start
