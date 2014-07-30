@@ -1,7 +1,10 @@
 require 'java'
 require 'pp'
 require "logging"
-java_import "HelloJob"
+require "./cat_fact"
+
+java_import "CatJob"
+
 
 Dir["#{File.expand_path File.dirname(__FILE__)}/jars/*.jar"].each { |jar| require jar }
 
@@ -27,7 +30,6 @@ end
 class CronSchedule
 
   def every(duration)
-
     length, unit = duration.split(".")
     if unit =~ /minute/
       "0 0/#{length} * 1/1 * ? *"
@@ -39,18 +41,17 @@ class CronSchedule
   end
 end
 
-foo = Foo.new("name")
-foo.set_frequency 5
-foo.report
-
 factory = org.quartz.impl.StdSchedulerFactory.new
-scheduler = factory.getScheduler
-job = HelloJob
 
-[ { name: 'A', cron: CronSchedule.new.every("2.minutes") } , 
-  { name: 'B', cron: CronSchedule.new.every("1.minutes") }].each do |user|
-  cron_schedule = org.quartz.CronScheduleBuilder.cronSchedule(org.quartz.CronExpression.new(user[:cron]))
-  job_detail = org.quartz.JobBuilder.newJob(job.java_class).withIdentity(user[:name], "group1").build
+cat_fact = CatFact.new
+users = cat_fact.users.select { |user| user["status"] == "active" }
+
+scheduler = factory.getScheduler
+job = CatJob
+
+users.each do |user|
+  cron_schedule = org.quartz.CronScheduleBuilder.cronSchedule(org.quartz.CronExpression.new(user[:freq]))
+  job_detail = org.quartz.JobBuilder.newJob(job.java_class).withIdentity(user[:name], "group1").usingJobData("email", user[:email]).build
   trigger = org.quartz.TriggerBuilder.newTrigger.withIdentity("trigger_#{user[:name]}", "group1").withSchedule(cron_schedule).build
   scheduler.scheduleJob(job_detail, trigger)
 end

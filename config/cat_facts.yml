@@ -1,0 +1,10 @@
+development:
+  mandrill_api_key: <%= ENV['MANDRILL_API_KEY'] %>
+  mongolab_api_key: <%= ENV['MONGOLAB_API_KEY'] %>
+  mongolab_username: <%= ENV['MONGOLAB_USERNAME'] %>
+  mongolab_password: <%= ENV['MONGOLAB_PASSWORD'] %>
+  mongolab_host: <%= ENV['MONGOLAB_HOST'] %>
+  mongolab_db: <%= ENV['MONGOLAB_DB'] %>
+  cat_facts_oid: 51be7b20e4b0abdfd30fdb7d
+  users_oid: 500cbbd988f0d22e94ea29cd
+  mongo_port: 29658

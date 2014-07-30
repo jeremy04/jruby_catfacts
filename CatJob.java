@@ -10,7 +10,7 @@ import org.quartz.Job;
 import org.quartz.JobExecutionException;
 
 
-public class HelloJob extends RubyObject implements Job {
+public class CatJob extends RubyObject implements Job {
     private static final Ruby __ruby__ = Ruby.getGlobalRuntime();
     private static final RubyClass __metaclass__;
 
@@ -18,25 +18,33 @@ public class HelloJob extends RubyObject implements Job {
         String source = new StringBuilder("# Edit classpath for JRuby class loader\n" +
             "# export CLASSPATH=$CLASSPATH:./jars/*\n" +
             "\n" +
-            "# Compile HelloJob.rb into Java code:\n" +
-            "# jrubyc --javac -c ./jars/quartz-2.2.1.jar:$JRUBY_JAR_DIR:. hello_job.rb\n" +
+            "# Compile CatJob.rb into Java code:\n" +
+            "# jrubyc --javac -c ./jars/quartz-2.2.1.jar:$JRUBY_JAR_DIR:. cat_job.rb\n" +
             "\n" +
             "require 'java'\n" +
             "java_import \"org.quartz.Job\"\n" +
             "java_import 'org.quartz.JobExecutionException'\n" +
             "\n" +
-            "class HelloJob\n" +
+            "require \"./cat_fact\"\n" +
+            "require \"./send_cat_fact\"\n" +
+            "\n" +
+            "class CatJob\n" +
             "  java_implements Java::OrgQuartz::Job\n" +
             "\n" +
             "  java_signature \"public void execute(org.quartz.JobExecutionContext jobExecutionContext) throws JobExecutionException\"\n" +
             "  def execute context\n" +
-            "    puts \"Sending cat fact #{context.getFireTime}\"\n" +
+            "    cat_fact = CatFact.new\n" +
+            "    cat_fact.download_facts!\n" +
+            "    fact = cat_fact.random_fact\n" +
+            "    puts \"Sending cat fact #{context.getFireTime} #{fact}\"\n" +
+            "    email = context.getJobDetail.getJobDataMap.getString(\"email\")\n" +
+            "    SendCatFact.send_email(email, fact)\n" +
             "  end\n" +
             "end").toString();
-        __ruby__.executeScript(source, "hello_job.rb");
-        RubyClass metaclass = __ruby__.getClass("HelloJob");
-        if (metaclass == null) throw new NoClassDefFoundError("Could not load Ruby class: HelloJob");
-        metaclass.setRubyStaticAllocator(HelloJob.class);
+        __ruby__.executeScript(source, "cat_job.rb");
+        RubyClass metaclass = __ruby__.getClass("CatJob");
+        if (metaclass == null) throw new NoClassDefFoundError("Could not load Ruby class: CatJob");
+        metaclass.setRubyStaticAllocator(CatJob.class);
         __metaclass__ = metaclass;
     }
 
@@ -47,7 +55,7 @@ public class HelloJob extends RubyObject implements Job {
      * @param ruby The JRuby instance this object will belong to
      * @param metaclass The RubyClass representing the Ruby class of this object
      */
-    private HelloJob(Ruby ruby, RubyClass metaclass) {
+    private CatJob(Ruby ruby, RubyClass metaclass) {
         super(ruby, metaclass);
     }
 
@@ -59,7 +67,7 @@ public class HelloJob extends RubyObject implements Job {
      * @param metaclass The RubyClass representing the Ruby class of this object
      */
     public static IRubyObject __allocate__(Ruby ruby, RubyClass metaClass) {
-        return new HelloJob(ruby, metaClass);
+        return new CatJob(ruby, metaClass);
     }
 
     /**
@@ -67,7 +75,7 @@ public class HelloJob extends RubyObject implements Job {
      * Ruby and RubyClass instances assocated with this class, and then invokes the
      * no-argument 'initialize' method in Ruby.
      */
-    public HelloJob() {
+    public CatJob() {
         this(__ruby__, __metaclass__);
         Helpers.invoke(__ruby__.getCurrentContext(), this, "initialize");
     }
